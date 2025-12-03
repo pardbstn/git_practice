@@ -80,8 +80,11 @@ void main() {
 <details>
   <summary> 과제 상세보기 </summary>
 
-  **쇼핑몰 상품 가격을 기반으로 장바구니의 총 금액을 계산하고,  
-2만원 이상일 경우 10% 할인 적용하는 프로그램입니다.**
+  가상의 쇼핑몰에서 결제 금액을 계산하는 프로그램을 만들어봅니다.
+
+1. 구매자가 장바구니에 담은 상품들의 전체 금액을 계산합니다.
+2. 총 금액이 20,000원 이상일 경우, 10% 할인을 적용합니다.
+3. 최종적으로 구매자가 결제해야 하는 금액을 출력합니다.
 
 ### ✔ 과제 설명
 - Map을 이용해 상품명과 가격을 저장하고  
@@ -101,41 +104,37 @@ void main() {
 
 ```dart
 void main() {
-  print("필수과제 2 - 쇼핑몰 만들기");
-
-  // 쇼핑몰 품목 (Map)
-  Map<String, int> shop = {
+  // 상품 가격 정보
+  Map<String, int> prices = {
     '티셔츠': 10000,
-    '바지': 5000,
-    '모자': 3000,
-    '가방': 50000
+    '바지': 8000,
+    '모자': 4000,
   };
 
-  // 장바구니 (List)
-  List<String> cart = ['티셔츠', '바지'];
+  // 장바구니 목록
+  List<String> cart = ['티셔츠', '바지', '모자', '티셔츠', '바지'];
 
-  // 총합 계산
+  // 1번: 총 금액 계산
   int total = 0;
   for (String item in cart) {
-    total += shop[item]!;
+    total += prices[item]!;
   }
 
-  // 2만원 이상 → 10% 할인
-  if (total >= 20000) {
-    double discount = total * 0.9;
-    double minus = total * 0.1;
+  print('장바구니에 $total원 어치를 담으셨네요!');
 
-    print("이 상품은 10% 할인된 가격으로 총 $discount원이 들어있습니다.");
-    print("❤️ 고객님께 총 $minus원을 할인해드렸습니다 ❤️");
-    print(" ");
-    print("구매해주셔서 감사합니다 🥰");
+  // 2번: 할인 계산 (10%)
+  int discount = 0;
+  if (total > 20000) {
+    discount = (total * 0.1).toInt(); 
+    print('할인 금액 : $discount원');
   }
-  // 2만원 미만 → 할인 없음
-  else {
-    print("이 장바구니에는 총 $total원이 들어있습니다.");
-    print("구매해주셔서 감사합니다 🥰");
-  }
+
+  // 3번: 최종 결제 금액 계산
+  int finalPrice = total - discount;
+
+  print('최종 결제 금액은 ${finalPrice}원입니다!');
 }
+
 ```
 </details>
 
