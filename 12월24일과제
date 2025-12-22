@@ -1,0 +1,365 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const TasksApp());
+}
+
+class TasksApp extends StatelessWidget {
+  const TasksApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'tasks',
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      home: const HomePage(),
+    );
+  }
+}
+
+// =============================
+// ToDo Entity Class
+// =============================
+class ToDoEntity {
+  final String title;
+  final String? description;
+  final bool isFavorite;
+  final bool isDone;
+
+  const ToDoEntity({
+    required this.title,
+    this.description,
+    this.isFavorite = false,
+    this.isDone = false,
+  });
+
+  ToDoEntity copyWith({
+    String? title,
+    String? description,
+    bool? isFavorite,
+    bool? isDone,
+  }) {
+    return ToDoEntity(
+      title: title ?? this.title,
+      description: description ?? this.description,
+      isFavorite: isFavorite ?? this.isFavorite,
+      isDone: isDone ?? this.isDone,
+    );
+  }
+}
+
+// =============================
+// Home Page
+// =============================
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final List<ToDoEntity> todos = [];
+
+  void addTodo(ToDoEntity todo) {
+    setState(() {
+      todos.add(todo);
+    });
+  }
+
+  void updateTodo(int index, ToDoEntity todo) {
+    setState(() {
+      todos[index] = todo;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      appBar: AppBar(
+        title: const Text(
+          '윤수`s Tasks',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: todos.isEmpty
+            ? const NoToDo()
+            : ListView.builder(
+                itemCount: todos.length,
+                itemBuilder: (context, index) {
+                  return ToDoView(
+                    todo: todos[index],
+                    onChanged: (updated) => updateTodo(index, updated),
+                    onTap: () async {
+                      final result = await Navigator.push<ToDoEntity>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ToDoDetailPage(todo: todos[index]),
+                        ),
+                      );
+                      if (result != null) updateTodo(index, result);
+                    },
+                  );
+                },
+              ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.orange,
+        child: const Icon(Icons.add, color: Colors.white, size: 24),
+        onPressed: () async {
+          final result = await showModalBottomSheet<ToDoEntity>(
+            context: context,
+            isScrollControlled: true,
+            builder: (_) => const AddToDoBottomSheet(),
+          );
+          if (result != null) addTodo(result);
+        },
+      ),
+    );
+  }
+}
+
+// =============================
+// No ToDo Widget
+// =============================
+class NoToDo extends StatelessWidget {
+  const NoToDo({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: const [
+          SizedBox(height: 12),
+          Icon(Icons.task_alt, size: 100),
+          SizedBox(height: 12),
+          Text(
+            '할 일이 없습니다',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 12),
+          Text(
+            '수강생 이름`s Tasks',
+            style: TextStyle(fontSize: 14, height: 1.5),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// =============================
+// ToDo View
+// =============================
+class ToDoView extends StatelessWidget {
+  final ToDoEntity todo;
+  final ValueChanged<ToDoEntity> onChanged;
+  final VoidCallback onTap;
+
+  const ToDoView({
+    super.key,
+    required this.todo,
+    required this.onChanged,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            IconButton(
+              icon: Icon(todo.isDone ? Icons.check_circle : Icons.circle),
+              onPressed: () => onChanged(todo.copyWith(isDone: !todo.isDone)),
+            ),
+            Expanded(
+              child: Text(
+                todo.title,
+                style: TextStyle(
+                  decoration: todo.isDone ? TextDecoration.lineThrough : null,
+                ),
+              ),
+            ),
+            IconButton(
+              icon: Icon(todo.isFavorite ? Icons.star : Icons.star_border),
+              onPressed: () =>
+                  onChanged(todo.copyWith(isFavorite: !todo.isFavorite)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// =============================
+// Add ToDo BottomSheet
+// =============================
+class AddToDoBottomSheet extends StatefulWidget {
+  const AddToDoBottomSheet({super.key});
+
+  @override
+  State<AddToDoBottomSheet> createState() => _AddToDoBottomSheetState();
+}
+
+class _AddToDoBottomSheetState extends State<AddToDoBottomSheet> {
+  final titleController = TextEditingController();
+  final descriptionController = TextEditingController();
+  final focusNode = FocusNode();
+
+  bool showDescription = false;
+  bool isFavorite = false;
+
+  void saveToDo() {
+    if (titleController.text.trim().isEmpty) return;
+    Navigator.of(context).pop(
+      ToDoEntity(
+        title: titleController.text.trim(),
+        description: descriptionController.text.trim().isEmpty
+            ? null
+            : descriptionController.text.trim(),
+        isFavorite: isFavorite,
+      ),
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      focusNode.requestFocus();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 12,
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: titleController,
+            focusNode: focusNode,
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) => saveToDo(),
+            decoration: const InputDecoration(hintText: '새 할 일'),
+            style: const TextStyle(fontSize: 16),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              if (!showDescription)
+                IconButton(
+                  icon: const Icon(Icons.short_text_rounded, size: 24),
+                  onPressed: () => setState(() => showDescription = true),
+                ),
+              IconButton(
+                icon: Icon(
+                  isFavorite ? Icons.star : Icons.star_border,
+                  size: 24,
+                ),
+                onPressed: () => setState(() => isFavorite = !isFavorite),
+              ),
+              const Spacer(),
+              TextButton(
+                onPressed: titleController.text.isEmpty ? null : saveToDo,
+                child: const Text('저장'),
+              ),
+            ],
+          ),
+          if (showDescription)
+            Expanded(
+              child: TextField(
+                controller: descriptionController,
+                maxLines: null,
+                decoration: const InputDecoration(hintText: '세부정보 추가'),
+                style: const TextStyle(fontSize: 14),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+// =============================
+// ToDo Detail Page
+// =============================
+class ToDoDetailPage extends StatefulWidget {
+  final ToDoEntity todo;
+
+  const ToDoDetailPage({super.key, required this.todo});
+
+  @override
+  State<ToDoDetailPage> createState() => _ToDoDetailPageState();
+}
+
+class _ToDoDetailPageState extends State<ToDoDetailPage> {
+  late ToDoEntity todo;
+
+  @override
+  void initState() {
+    super.initState();
+    todo = widget.todo;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        leading: const BackButton(),
+        actions: [
+          IconButton(
+            icon: Icon(todo.isFavorite ? Icons.star : Icons.star_border),
+            onPressed: () {
+              setState(() {
+                todo = todo.copyWith(isFavorite: !todo.isFavorite);
+              });
+            },
+          ),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              todo.title,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            Text(todo.description ?? '세부 내용 없음'),
+          ],
+        ),
+      ),
+    );
+  }
+}
