@@ -1,76 +1,92 @@
-12/12 과제
+12/24 과제
+
+1️⃣ main.dart
+
+앱의 시작점
+→ TasksApp 실행
+
+2️⃣ TasksApp
+
+프로젝트 이름: tasks
+
+라이트 / 다크 테마 지원
+
+첫 화면을 HomePage로 지정
+
+3️⃣ ToDoEntity
+
+To Do 하나를 표현하는 데이터 클래스
+
+title        // 할 일 제목
+description  // 세부 내용 (선택)
+isFavorite   // 즐겨찾기 여부
+isDone       // 완료 여부
 
 
-간단 요약
+copyWith()로 기존 ToDo를 수정할 수 있음
 
-파일에서 학생 이름과 점수를 읽는다.
+4️⃣ HomePage
 
-사용자가 학생 이름을 입력한다.
+메인 화면
 
-그 학생의 정보(이름 + 점수)를 보여준다.
+AppBar 제목: 수강생 이름`s Tasks
 
-그 내용을 result.txt에 저장한다.
+ToDo 리스트 관리
 
-코드 설명
-1. Score 클래스
+ToDo가 없으면 NoToDo 위젯 표시
 
-점수(score)만 저장하는 기본 클래스.
+있으면 ToDoView를 ListView로 출력
 
-showInfo()로 점수를 출력함.
++ 버튼 → BottomSheet 열기
 
-class Score {
-  int score;
-  Score(this.score);
+5️⃣ NoToDo
 
-  void showInfo() {
-    print("점수: $score");
-  }
-}
+할 일이 없을 때 보여주는 화면
 
-2. StudentScore 클래스 (Score 상속)
+margin / padding 20
 
-Score 클래스를 이어받아 이름(name) 도 함께 저장.
+radius 12
 
-showInfo()를 다시 정의해서 “이름 + 점수” 형태로 출력함.
+이미지 + 텍스트 구성
 
-class StudentScore extends Score {
-  String name;
+6️⃣ AddToDoBottomSheet
 
-  StudentScore(this.name, int score) : super(score);
+ToDo 추가 화면
 
-  @override
-  void showInfo() {
-    print("이름: $name, 점수: $score");
-  }
-}
+자동 포커스 → 키보드 자동 표시
 
-3. students.txt에서 학생 데이터 읽기
+제목 입력 후 엔터 = 저장
 
-파일을 한 줄씩 읽고
+즐겨찾기 아이콘 토글
 
-"이름,점수" 형식으로 나눠서 StudentScore 객체로 만들어 리스트에 넣음.
+설명 아이콘 클릭 시 description 입력창 표시
 
-예:
-students.txt 내용이
+저장 시 ToDoEntity 반환 후 닫힘
 
-철수,80
-영희,90
+7️⃣ ToDoView
 
+리스트에 보이는 ToDo 한 줄
 
-이면 각각 학생 객체가 만들어짐.
+완료 아이콘 클릭 → Done 상태 변경
 
-4. 결과 저장하기
+즐겨찾기 아이콘 클릭 → Favorite 변경
 
-내용(String)을 받아 파일(result.txt)에 저장함.
+제목 클릭 → 상세 페이지 이동
 
-5. main() 실행 흐름
+상태 변경은 외부 함수로 처리
 
-students.txt에서 학생 목록 불러오기
+8️⃣ ToDoDetailPage
 
-사용자에게 “어떤 학생을 조회할지” 물어봄
+ToDo 상세 화면
 
-입력한 이름을 가진 학생을 리스트에서 찾음
+뒤로가기 버튼
 
-학생 정보 출력
+즐겨찾기 변경 가능
 
-result.txt에 결과 저장
+변경 사항은 이전 화면에도 반영
+
+9️⃣ FloatingActionButton
+
+키보드가 올라와도 위치 고정
+
+새 ToDo 추가 역할
